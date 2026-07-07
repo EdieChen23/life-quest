@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B8863B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="人生RPG">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>人生 RPG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500&display=swap');
+
+  :root {
+    --paper: #F3EEE2;
+    --card: #FBF8F1;
+    --ink: #3A3327;
+    --ink-soft: #6B6355;
+    --gold: #B8863B;
+    --gold-light: #EADFC4;
+    --sage: #7C8A6E;
+    --sage-light: #E4E9DD;
+    --rose: #A8594A;
+    --rose-light: #F1DDD6;
+    --line: #DCD3BE;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--ink);
+  }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px 48px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .tab-btn.active {
+    color: var(--rose);
+    border-bottom-color: var(--rose);
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .section-title {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 19px;
+    margin: 0 0 4px;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .task-check {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--sage);
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--sage);
+    background: transparent;
+  }
+
+  .task-check.done {
+    background: var(--sage);
+    color: #fff;
+  }
+
+  .task-title {
+    flex: 1;
+    font-size: 14px;
+  }
+
+  .task-row.done .task-title {
+    text-decoration: line-through;
+    color: var(--ink-soft);
+  }
+
+  .task-del {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .add-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .add-row input:focus { outline: none; border-color: var(--gold); }
+
+  .add-row button {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--gold);
+    background: var(--gold-light);
+    color: #6B4A1C;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .add-row button:hover { background: var(--gold); color: #fff; }
+
+  .task-hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+
+  .world-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .world-level {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .world-count {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+
+  .garden {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    max-width: 320px;
+    margin: 0 auto 16px;
+  }
+
+  .garden-cell {
+    font-size: 22px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sage-light);
+    border-radius: 8px;
+  }
+
+  .garden-cell.empty {
+    background: var(--line);
+    opacity: 0.4;
+  }
+
+  .world-progress-outer {
+    height: 10px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    max-width: 300px;
+    margin: 0 auto 6px;
+  }
+
+  .world-progress-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sage), var(--gold));
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+
+  .world-progress-text {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .collect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .collect-item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .collect-item:hover { transform: scale(1.02); }
+
+  .collect-item.locked {
+    opacity: 0.45;
+  }
+
+  .collect-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  .collect-title {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .collect-date {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(58, 51, 39, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+
+  .overlay.show { display: flex; }
+
+  .overlay-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 40px 36px;
+    text-align: center;
+    max-width: 320px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    animation: pop 0.4s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .overlay-flower { font-size: 48px; margin-bottom: 12px; }
+
+  .overlay-title {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--rose);
+    margin-bottom: 6px;
+  }
+
+  .overlay-sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .overlay-close {
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: none;
+    background: var(--sage);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .petal {
+    position: fixed;
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 1000;
+    animation: fall 1.6s ease-in forwards;
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(400px) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="today">🎯 Today</button>
+    <button class="tab-btn" data-tab="world">🌱 World</button>
+    <button class="tab-btn" data-tab="collection">🏆 Collection</button>
+  </div>
+
+  <div class="page active" id="page-today">
+    <div class="section-title">今天的任務</div>
+    <div class="section-sub">只放今天真的想完成的事,不用多。完成的當下就是過關。</div>
+    <div id="today-list"></div>
+    <div class="add-row">
+      <input type="text" id="new-task" placeholder="今天想完成的一件小事..." />
+      <button id="add-task-btn">加入</button>
+    </div>
+    <div class="task-hint">建議一天 1-3 個就好,完成比完美重要。</div>
+  </div>
+
+  <div class="page" id="page-world">
+    <div class="world-card">
+      <div class="world-level" id="world-level">Lv.1 新手園丁</div>
+      <div class="world-count" id="world-count">0 次完成</div>
+      <div class="garden" id="garden"></div>
+      <div class="world-progress-outer"><div class="world-progress-inner" id="world-progress"></div></div>
+      <div class="world-progress-text" id="world-progress-text">距離下一級還差 5 次</div>
+    </div>
+  </div>
+
+  <div class="page" id="page-collection">
+    <div class="section-title">人生圖鑑</div>
+    <div class="section-sub">點一下記錄下每個「第一次」發生的時刻。</div>
+    <div class="collect-grid" id="collect-grid"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-flower" id="overlay-flower">🌸</div>
+    <div class="overlay-title" id="overlay-title">過關!</div>
+    <div class="overlay-sub" id="overlay-sub">又前進了一步</div>
+    <button class="overlay-close" id="overlay-close">繼續</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'life-quest-state';
+const FLOWERS = ['🌸','🌷','🌼','🌻','🌺'];
+
+const defaultCollection = [
+  { id: 'c1', icon: '🌼', title: '第一個作品完成', unlocked: false, date: null },
+  { id: 'c2', icon: '📷', title: '第一張商品照上架', unlocked: false, date: null },
+  { id: 'c3', icon: '🛒', title: '第一次刊登服務/商品', unlocked: false, date: null },
+  { id: 'c4', icon: '👤', title: '第一位詢問的人', unlocked: false, date: null },
+  { id: 'c5', icon: '💰', title: '第一筆收入', unlocked: false, date: null },
+  { id: 'c6', icon: '🔁', title: '第一位回購客人', unlocked: false, date: null }
+];
+
+let state = {
+  todayTasks: [],
+  totalCompleted: 0,
+  collection: defaultCollection
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const loaded = JSON.parse(raw);
+      state = {
+        todayTasks: loaded.todayTasks || [],
+        totalCompleted: loaded.totalCompleted || 0,
+        collection: loaded.collection || defaultCollection
+      };
+    }
+  } catch (e) {}
+  renderAll();
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+
+function renderAll() {
+  renderToday();
+  renderWorld();
+  renderCollection();
+}
+
+function renderToday() {
+  const list = document.getElementById('today-list');
+  list.innerHTML = '';
+  state.todayTasks.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'task-row' + (t.done ? ' done' : '');
+    row.innerHTML = `
+      <button class="task-check ${t.done ? 'done' : ''}" data-id="${t.id}">${t.done ? '✓' : ''}</button>
+      <div class="task-title">${t.title}</div>
+      <button class="task-del" data-del="${t.id}" aria-label="刪除">×</button>
+    `;
+    list.appendChild(row);
+  });
+  document.querySelectorAll('.task-check').forEach(btn => {
+    btn.addEventListener('click', () => toggleTask(btn.dataset.id));
+  });
+  document.querySelectorAll('.task-del').forEach(btn => {
+    btn.addEventListener('click', () => deleteTask(btn.dataset.del));
+  });
+}
+
+function toggleTask(id) {
+  const t = state.todayTasks.find(x => x.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  if (t.done) {
+    state.totalCompleted += 1;
+    showLevelUp('task');
+    spawnPetals();
+  } else {
+    state.totalCompleted = Math.max(0, state.totalCompleted - 1);
+  }
+  renderAll();
+  saveState();
+}
+
+function deleteTask(id) {
+  state.todayTasks = state.todayTasks.filter(x => x.id !== id);
+  renderAll();
+  saveState();
+}
+
+document.getElementById('add-task-btn').addEventListener('click', addTask);
+document.getElementById('new-task').addEventListener('keypress', e => {
+  if (e.key === 'Enter') addTask();
+});
+
+function addTask() {
+  const input = document.getElementById('new-task');
+  const val = input.value.trim();
+  if (!val) return;
+  state.todayTasks.push({ id: 't' + Date.now(), title: val, done: false });
+  input.value = '';
+  renderAll();
+  saveState();
+}
+
+function renderWorld() {
+  const count = state.totalCompleted;
+  const level = Math.floor(count / 5) + 1;
+  const inLevel = count % 5;
+  const levelNames = ['新手園丁', '勤奮園丁', '花園守護者', '花草達人', '豐收園丁', '傳說園丁'];
+  const levelName = levelNames[Math.min(level - 1, levelNames.length - 1)];
+
+  document.getElementById('world-level').textContent = `Lv.${level} ${levelName}`;
+  document.getElementById('world-count').textContent = `${count} 次完成`;
+  document.getElementById('world-progress').style.width = (inLevel / 5 * 100) + '%';
+  document.getElementById('world-progress-text').textContent = `距離下一級還差 ${5 - inLevel} 次`;
+
+  const garden = document.getElementById('garden');
+  garden.innerHTML = '';
+  const totalCells = 24;
+  const bloomCount = Math.min(count, totalCells);
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement('div');
+    if (i < bloomCount) {
+      cell.className = 'garden-cell';
+      cell.textContent = FLOWERS[i % FLOWERS.length];
+    } else {
+      cell.className = 'garden-cell empty';
+    }
+    garden.appendChild(cell);
+  }
+}
+
+function renderCollection() {
+  const grid = document.getElementById('collect-grid');
+  grid.innerHTML = '';
+  state.collection.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'collect-item' + (c.unlocked ? '' : ' locked');
+    item.dataset.id = c.id;
+    item.innerHTML = `
+      <div class="collect-icon">${c.unlocked ? c.icon : '⬜'}</div>
+      <div class="collect-title">${c.title}</div>
+      ${c.unlocked && c.date ? `<div class="collect-date">${c.date}</div>` : ''}
+    `;
+    grid.appendChild(item);
+  });
+  document.querySelectorAll('.collect-item').forEach(el => {
+    el.addEventListener('click', () => toggleCollect(el.dataset.id));
+  });
+}
+
+function toggleCollect(id) {
+  const c = state.collection.find(x => x.id === id);
+  if (!c) return;
+  c.unlocked = !c.unlocked;
+  if (c.unlocked) {
+    c.date = new Date().toLocaleDateString('zh-TW');
+    showLevelUp('collect', c.title);
+    spawnPetals();
+  } else {
+    c.date = null;
+  }
+  renderAll();
+  saveState();
+}
+
+function showLevelUp(kind, label) {
+  const overlay = document.getElementById('overlay');
+  const flower = document.getElementById('overlay-flower');
+  const title = document.getElementById('overlay-title');
+  const sub = document.getElementById('overlay-sub');
+  flower.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
+  if (kind === 'collect') {
+    title.textContent = '解鎖!';
+    sub.textContent = label + ' 已經加進妳的人生圖鑑了。';
+  } else {
+    title.textContent = '過關!';
+    sub.textContent = '花園又多開了一朵花。';
+  }
+  overlay.classList.add('show');
+}
+
+function spawnPetals() {
+  for (let i = 0; i < 10; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.top = '-20px';
+    p.style.animationDelay = (Math.random() * 0.4) + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 2200);
+  }
+}
+
+document.getElementById('overlay-close').addEventListener('click', () => {
+  document.getElementById('overlay').classList.remove('show');
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+loadState();
+</script>
+</body>
+</html>
